@@ -14,6 +14,8 @@ void setup()
  
 void loop() 
 {
+
+	//NOTE THAT DVD DRIVES CAN RUN UP TO 250 STEP SPPED!! (test tag)
   xAxis.setSpeed(100);
   yAxis.setSpeed(100);
  //max 250 steps for dvd/cd stepper motors 
