@@ -1,5 +1,13 @@
 import cv2
 
+
+#TODO resize image such that it fits within number of motor steps
+
+#TODO adjust contrast
+
+#TODO edge detection 
+
+
 im_colour = cv2.imread('image.png')
 im_gray = cv2.cvtColor(im_colour, cv2.COLOR_BGR2GRAY)
 
@@ -9,3 +17,5 @@ thresh = 127
 im_bw = cv2.threshold(im_gray, thresh, 255, cv2.THRESH_BINARY)[1]
 
 cv2.imwrite('image_bw.png',im_bw)
+
+#TODO detect pixels (000), output in file
