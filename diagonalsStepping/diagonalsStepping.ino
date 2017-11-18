@@ -48,7 +48,6 @@ void loop()
 		  delay(1);
 		}
 
-	 
 		for (int i = 0; i < 100; i++){
 			xAxis.step(1);
 			delay(1);

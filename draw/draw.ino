@@ -18,7 +18,6 @@ void makeLoop(int n, int altYStep);
 void setup(){
 	penServo.attach(servoPin);//attach servo to arduino
   Serial.begin(9600);
-
 }
  
 void loop() {

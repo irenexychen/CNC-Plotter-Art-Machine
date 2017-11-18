@@ -62,13 +62,23 @@ xblacks = []
 yblacks = []
 
 f = open('coordinates.txt', 'w')
-
+iterations = 0;
 for i in range(im_outline.shape[0]):
 	for j in range(im_outline.shape[1]):
-		if (im_outline[i,j] == 0):
+		if (iterations == 0):
+			previousXBlack = i
+			previousYBlack = y
 			xblacks = np.append(xblacks, i)
 			yblacks = np.append(xblacks, j)
 			print>>f, i, j
+			iterations = iterations + 1
+		if (im_outline[i,j] == 0):
+			if ((abs(previousXBlack - i) > 5) or (abs(previousYBlack - j) > 5)):
+				xblacks = np.append(xblacks, i)
+				yblacks = np.append(xblacks, j)
+				print>>f, i, j
+				previousXBlack = i
+				previousYBlack = j
 			
 
 
