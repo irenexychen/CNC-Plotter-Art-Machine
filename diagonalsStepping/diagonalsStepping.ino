@@ -40,17 +40,20 @@ void loop()
 		for (int i = 0; i < numlines; i++){
       xstep = coords[i][0] - xold;
       ystep = coords[i][1] - yold;
-      if (xstep > 0){
+      if (xstep > 5 || ystep > 5){ //too far, make new line
+        penUp();
+        altYRatio = ystep/xstep;
+        makeLoop(xstep, altYRatio);
+        penDown();
+      } else if (xstep > 0){ //close enough, it's a line, draw
         altYRatio = ystep/xstep;
         makeLoop(xstep, altYRatio);
       } else { //x is 0, can't divide by 
-        
+        makeLoop(1, ystep);
       }
-      
-      
 		}
 		
-		penServo.write(70);//pulls pen up      
+		penServo.write(70); //pulls pen up      
 		delay(5000); //pause for 5 seconds
 		
 		draw = false;
