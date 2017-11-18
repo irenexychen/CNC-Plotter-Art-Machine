@@ -34,6 +34,6 @@ void loop()
   delay(100);
  //draws a square
  
-  penServo.write(70);//pulls pen up      
+   penServo.write(70);//pulls pen up      
   delay(5000); //pause for 5 seconds
 }

@@ -3,9 +3,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define BLYNK_PRINT Serial
+#include <SPI.h>
+#include <Ethernet.h>
+#include <BlynkSimpleEthernet.h>
+
+
 const int stepsPerRevolution = 20; 
-Servo penServo;  //initiates servo
-int servoPin = 6;  //pin servo is connected to
+Servo penServo;//initiates servo
+int servoPin = 6;//pin servo is connected to
 
 Stepper xAxis(stepsPerRevolution, 2,3,10,11); //pins x axis motor are connected to
 Stepper yAxis(stepsPerRevolution, 4,5,8,9); //pins y axis motor are connected to
@@ -14,14 +20,18 @@ void penUp();
 void penDown();
 void makeLoop(int n, int altYStep);
 
+char auth[] = "9fadd2565fcc4533a2ac3fec27454768";
+
 
 void setup(){
 	penServo.attach(servoPin);//attach servo to arduino
-  Serial.begin(9600);
-
+  Serial.begin (9600);
+  Blynk.begin(auth);
 }
  
 void loop() {
+  Blynk.run();
+  
   bool draw = true;
   int coords[300][2]; //make smol in python pls
   int numLines = 0;
@@ -33,7 +43,7 @@ void loop() {
   int altYRatio;
   int penLiftThreshold;
   
-  delay (5000);
+  delay (200);
   char coord;
   int line = 0;
   
@@ -41,14 +51,7 @@ void loop() {
 	yAxis.setSpeed(100);
 	//max 250 steps for dvd/cd stepper motors 
 
-  Serial.print("inside loop1");
-
-  coord = Serial.read();
-  Serial.print(coord);
-  while (Serial.available() > 0){
-     
-    delay(1);
-    Serial.print("there's a file??");
+   //while (Serial.available() > 0){
     while (coord == '!'){ //end character in txt file
       coord = Serial.read();
       coords[line][0]= (int)coord;//x value
@@ -59,7 +62,9 @@ void loop() {
         numLines++;
         line++;
       } 
-    
+    //}
+ 
+	while (draw == true){
 		penServo.write(0);//pulls pen down      
 		delay(5000); //pause for 5 seconds
     
@@ -82,6 +87,7 @@ void loop() {
 		penServo.write(70); //pulls pen up      
 		delay(5000); //pause for 5 seconds
 		
+		draw = false;
 	  }
   }
 }
