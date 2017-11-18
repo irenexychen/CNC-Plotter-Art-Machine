@@ -1,7 +1,7 @@
 from __future__ import division
 import cv2
-import cv
 import numpy as np
+import serial as Serial
 
 
 #resize image such that it fits within number of motor steps
@@ -73,3 +73,11 @@ for i in range(im_outline.shape[0]):
 
 
 print>>f, "!"
+
+
+
+ser = Serial('/dev/ttyACM0', 9600, timeout=3)
+ser.write(coordinates.txt)
+
+
+
