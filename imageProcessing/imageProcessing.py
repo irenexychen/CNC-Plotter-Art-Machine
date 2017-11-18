@@ -72,4 +72,4 @@ for i in range(im_outline.shape[0]):
 			
 
 
-
+print>>f, "!"
