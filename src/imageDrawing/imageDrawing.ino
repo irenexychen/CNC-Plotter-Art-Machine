@@ -45,7 +45,7 @@ void loop()
     int coords[1][2];
     delay (3000);
 
-    //int numCoords = Serial.parseInt();
+    int numCoords = 527;  //Serial.parseInt();
     //Serial.print("FROM ARDUINO!! READ the numCoords\n");
     xAxis.setSpeed(100);
     yAxis.setSpeed(100);
@@ -53,104 +53,135 @@ void loop()
     //sets up position, move to first coord
     Serial.print("FIRST\n");
     Serial.print("@GetNext"); //anything that is a command shouldn't have a \n??
+    Serial.flush();
     delay(4000);
-    xold = (int)blockingRead();
+    xold = blockingRead();
     yold = blockingRead();
-    Serial.print("WHY THE FUCK ARE YOU NOT SENDINGG TO PYTHON???\n");
-    Serial.print(xold);
-    Serial.print(yold);
+    //Serial.print("WHY THE FUCK ARE YOU NOT SENDINGG TO PYTHON???\n");
     penUp();
     drawX((int)xold);
     drawY((int)yold);
     penDown();
 
-    for (int i = 1; i < 828; i++)
+    for (int i = 1; i < numCoords; i++)
     {
       Serial.print("@GetNext"); //gives order to imageProcessing.py
-      pinMode(13, ledstate);
-      ledstate = !ledstate;
-
+      Serial.flush();
+      delay(5000);
       //python sends in next two coords
-      coords[1][0] = (int)convertInputToInt(); //delay reading 1 byte
-      coords[1][1] = (int)convertInputToInt(); //reads y
+      coords[1][0] = blockingRead();
+      //delay(2000);
+      coords[1][1] = blockingRead(); //reads y
 
-      //python must stop sending here
-      //ask python to sleep so that the cnc can have enough time to draw
-      Serial.print("@Sleep\n");
 
       //calculate difference
       xstep = coords[1][0] - xold;
       ystep = coords[1][1] - yold;
 
-      if (fabs(xstep) > 7 || fabs(ystep) > 7 )
+      xstep = -xstep;
+
+      if (fabs(xstep) > 20 || fabs(ystep) > 20 )
       {
         //move to location
-        penUp();
+        Serial.print("ABOVE THRESHOLD");
+        //penUp();
         drawX((int)xstep);
         drawY((int)ystep);
-        penDown();
+        //penDown();
       } else {
         //draw the shit
         drawX((int)xstep);
         drawY((int)ystep);
-        //TODO: check if pendown/up commands match/don't break for all combs
-      }
-      xold = coords[1][0];
-      yold = coords[1][1];
 
+        xold = coords[1][0];
+        yold = coords[1][1];
+      }
     }
     penUp();
     drawBool = false;
   }
 }
-
 int blockingRead()
 {
-  Serial.print("INSIDE BLOCKING READ");
+  Serial.print("INSIDE BLOCKING READ\n");
+  Serial.flush();
   while (!Serial.available())
   {
+    Serial.print("FML SERIAL IS NOT AVAILABLE??? WHERE'S MAH NEXT COORDINATE\n");
+    Serial.flush();
     delay(100);
   }
   return convertInputToInt();
-  //returns unsigned int, is cast to signed outside
 }
 
 void drawX(int n)
 {
-  Serial.print("Drawing!!X");
-  Serial.print(n);
-  Serial.print("\n");
-  for (int i = 0; i < (int)n; i++)
-  {
-    xAxis.step(1);
-    delay(20);
+  if (n > 0) {
+    Serial.print("Drawing positive x");
+    Serial.print(n);
+    Serial.print("\n");
+    Serial.flush();
+    for (int i = 0; i < (int)n; i++)
+    {
+      xAxis.step(1);
+      delay(10);
+    }
+  } else {
+    n = -n;
+    Serial.print("Drawing negative x");
+    Serial.print(n);
+    Serial.print("\n");
+    Serial.flush();
+    for (int i = 0; i < (int)n; i++)
+    {
+      xAxis.step(-1);
+      delay(10);
+    }
   }
 }
 
 void drawY(int n)
 {
-  Serial.print("Drawing!!Y");
-  Serial.print(n);
-  Serial.print("\n");
-  for (int i = 0; i < n; i++)
-  {
-    yAxis.step(1);
-    delay(20);
+  if (n > 0) {
+    Serial.print("Drawing positive y");
+    Serial.print(n);
+    Serial.print("\n");
+    Serial.flush();
+    for (int i = 0; i < (int)n; i++)
+    {
+      yAxis.step(1);
+      delay(10);
+    }
+  } else {
+    n = -n;
+    Serial.print("Drawing negative y");
+    Serial.print(n);
+    Serial.print("\n");
+    Serial.flush();
+    for (int i = 0; i < (int)n; i++)
+    {
+      yAxis.step(-1);
+      delay(10);
+    }
   }
 }
 
 int convertInputToInt() {
   Serial.print("inside convertInputToInt function");
+  Serial.flush();
   String resultS;
   int resultI;
   char tempChar = Serial.read();
   String inputString = "";
   //assume serial.available
   int i = 0;
-
-  inputString = (char)tempChar;
-  Serial.print(inputString);
-
+  while (tempChar != ' ' && tempChar != '\n') {
+    inputString += (char)tempChar;
+    Serial.print(inputString);
+    Serial.print("\n");
+    Serial.flush();
+    tempChar = Serial.read();
+  }
   for (int i = 0; i < inputString.length(); i++)
   {
     if (inputString[i] == ".")
@@ -165,16 +196,17 @@ int convertInputToInt() {
   resultI = resultS.toInt();
   Serial.print("input that was just read");
   Serial.print(resultI);
+  Serial.flush();
   return resultI;
 }
 void penUp()
 {
   penServo.write(70);//pulls pen up
-  delay(3000); //pause for 3 seconds
+  delay(2000); //pause for 3 seconds
 }
 
 void penDown()
 {
   penServo.write(0);//pulls pen up
-  delay(3000); //pause for 3 seconds
+  delay(2000); //pause for 3 seconds
 }
