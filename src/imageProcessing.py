@@ -2,6 +2,7 @@ from __future__ import division
 import cv2
 import numpy as np
 from time import sleep
+import struct
 
 import serial.tools.list_ports
 
@@ -61,61 +62,97 @@ im_outline = cv2.bitwise_not(im_outline);
 cv2.imwrite('goose1outline.png',im_outline)
 
 
-#TODO detect pixels (000), output in file
-#coordinates = np.where(zeros == [255])
 
+#Parsing coordinates to Arduino
 coordsX = []
 coordsY = []
 
-ser = serial.Serial('/dev/ttyACM1', 9600, timeout=3)
+f = open('coordinates.txt', 'w')
 
+ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
 
-def writeWithD(s):
-	print(s)
-	sleep(1/2);
-	ser.write(s)
-	ser.flush();
+def writeDebug(s):
+	print("printed from DEBUG Function:" + str(s) + "\n")
+	sleep(1)
+	ser.write(str(s))
+	ser.flush()
 
+#not including val iterations in coordinates.txt
 
 iterations = 0;
 for i in range(im_outline.shape[0]):
 	for j in range(im_outline.shape[1]):
-		if (iterations == 0):
+		if (iterations == 0 and im_outline[i,j] == 0):
 			previousXBlack = i
 			previousYBlack = y
-			#coords = np.append(coords, s)
-			#writeWithD(s)
-			iterations = iterations + 1
-		if (im_outline[i,j] == 0): 
+			iterations += 1
+			coordsX = np.append(coordsX, i)
+			coordsY = np.append(coordsY, j)
+			print >> f, i, j
+		elif (im_outline[i,j] == 0): 
 			if ((abs(previousXBlack - i) > 5) or (abs(previousYBlack - j) > 5)):
 				coordsX = np.append(coordsX, i)
-				coordsY = np.append(coordsX, j)
-				#coordsY = np.append(coordsY, j)
-				#writeWithD(s)
-
+				coordsY = np.append(coordsY, j)
+				print >> f, i, j
 				previousXBlack = i
 				previousYBlack = j
+				iterations += 1
 
-coordsX = np.append(coordsX, -1)
-coordsY = np.append(coordsY, -1)
 
-i = 0
-while (True):
-	while (not ser.in_waiting):
-		print("test")
-		sleep(1)
+
+
+#writeDebug(str(iterations))
+
+
+
+'''
+message = "not get next"
+#loop so that the python program does not quit
+for i in range (iterations):
+	while (message != "@GetNext"):
+		#read in a non-relevant line i.e. Sleep
+		print("from python: waiting")
+		sleep(1) #check for next line
+		message = ser.readline()
+		print(str(i) + "from arduino, message:" + message)
+	print("left @GetNext!!!!!!!\n")
+	#is @GetNext, give it next
+	writeDebug(coordsX[i]);
+	writeDebug(coordsY[i]);
+
 	message = ser.readline()
-	print(message)
+	print(str(i) + "from arduino again, message:" + message)
 
-	if (message == "@GetNext"):
-		if (coordsX[i] != -1):
-			writeWithD(coordsX[i]);
-			writeWithD(coordsY[i]);
- 			i = i + 1
- 		else:
- 			break
 
-writeWithD("!")
+'''
+
+message = "not get next"
+#loop so that the python program does not quit
+for i in range (iterations):
+	while (message != "@GetNext"):
+		#read in a non-relevant line i.e. Sleep
+		print("from python: waiting")
+		while (not ser.in_waiting):
+			print(str(i) + "in_waiting from python: waiting to read next arduino line")
+			sleep(1)
+		
+		#next line from arduino exists, read!!
+		message = ser.readline()
+		print(str(i) + "from arduino, message:" + message)
+	print("left @GetNext!!!!!!!\n")
+	#is @GetNext, give it next
+	#bin = struct.pack('f', coordsX[i])
+	ser.write(str(coordsX[i]))
+	ser.write(" ")
+	sleep(1)
+
+	ser.write(str(coordsY[i]))
+	ser.write("\n")
+	sleep(1)
+
+	message = ser.readline()
+	print(str(i) + "from arduino again, message:" + message)
+
 
 
 
