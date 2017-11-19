@@ -73,11 +73,8 @@ coordsY = []
 maxX = im_outline.shape[0]
 maxY = im_outline.shape[1]
 
-foundX = False * maxX
-foundY = False * maxY
 
-
-f = open('coordinatesquestion.txt', 'w')
+f = open('coordinatesquestionSORTED.txt', 'w')
 
 #ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
 
@@ -90,136 +87,15 @@ def writeDebug(s):
 #not including val iterations in coordinates.txt
 
 iterations = 0
-def generalCheckSurrounding(i,j):
-	checkSurroundingX(i,j)
-	checkSurroundingY(i,j)
-	checkBothSurrounding(i,j)
-
-def checkSurroundingX(current, j):
-	new = current - 1
-	if (0 <= new <= maxX):
-		if (not foundX[new] and not foundY[j] and im_outline.shape[0][new] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
-			print >> f, current, j
-			foundX[new] = True
-			foundY[j] = True
-			return generalCheckSurrounding(new, j)
-		foundX[new] = True
-		foundY[j] = True
-
-	new = current + 1
-	if (0 <= new <= maxX):
-		if (not foundX[new] and not foundY[j] and im_outline.shape[0][new] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
-			print >> f, current, j
-			foundX[new] = True
-			foundY[j] = True
-			return generalCheckSurrounding(new, j)
-		foundX[new] = True
-		foundY[j] = True
-
-
-def checkSurroundingY(i, current):
-	new  = current - 1
-	if (0 <= new <= maxY):
-		if (not foundX[i] and not foundY[new] and im_outline.shape[1][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
-			print >> f, i, current
-			foundX[i] = True
-			foundY[new] = True
-			return generalCheckSurrounding(i, new)
-		foundX[i] = True
-		foundY[new] = True
-
-	new = current + 1
-	if (0 <= new <= maxY):
-		if (not foundX[i] and not foundY[new] and im_outline.shape[1][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
-			print >> f, i, current
-			foundX[i] = True
-			foundY[new] = True
-			return generalCheckSurrounding(i, new)
-		foundX[i] = True
-		foundY[new] = True
-
-def checkBothSurrounding(i, j):
-	newI = i - 1
-	newJ = j - 1
-	if (0 <= newI <= maxX and 0 <= newJ <= maxY):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
-
-	newI = i - 1
-	newJ = j + 1
-	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
-
-	newI = i + 1
-	newJ = j - 1
-	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
-		
-
-	newI = i + 1
-	newJ = j + 1
-
-	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
-
-
-
-
 
 for i in range(im_outline.shape[0]):
 	for j in range(im_outline.shape[1]):
-		print("looking for coords....")
 		if (im_outline[i,j] == 0):
-		# and not foundX[i] and not foundY[j]):
 			coordsX = np.append(coordsX, i)
 			coordsY = np.append(coordsY, j)				
 			print >> f, i, j
-			foundX[i] = True
-			foundY[j] = True
-			generalCheckSurrounding(i, j)
 			print("found a coord!!")
 
-		foundX[i] = True
-		foundY[j] = True
 
 
 

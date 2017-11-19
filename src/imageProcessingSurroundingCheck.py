@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from time import sleep
 import struct
+
+from itertools import repeat
 '''
 import serial.tools.list_ports
 
@@ -45,7 +47,7 @@ cv2.imwrite('questionmark_bw.png',im_bw)
 
 
 #edge detection:
-im_blurC = cv2.GaussianBlur(im_colour, (7,7),0) #blurs to soften edges, not really sure how effetive this is yet
+im_blurC = cv2.GaussianBlur(im_colour, (7,7),0) #blurs to soften edges, really sure how effetive this is yet
 im_blurBW = cv2.GaussianBlur(im_bw, (7,7),0)
 
 im_outlineC = cv2.Canny(im_blurC, 100, 200) #for colour 
@@ -66,20 +68,36 @@ cv2.waitKey(0)
 
 
 
+
+
 #Parsing coordinates to Arduino
+global coordsX 
 coordsX = []
+global coordsY 
 coordsY = []
 
 maxX = im_outline.shape[0]
 maxY = im_outline.shape[1]
 
-foundX = False * maxX
-foundY = False * maxY
 
 
 f = open('coordinatesquestion.txt', 'w')
 
+foundX = []
+foundY = []
+foundX = list(repeat(0, maxX))
+foundY = list(repeat(0, maxY))
+
+
+
+
+
+
+
 #ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
+
+
+
 
 def writeDebug(s):
 	print("printed from DEBUG Function:" + str(s) + "\n")
@@ -87,140 +105,125 @@ def writeDebug(s):
 	ser.write(str(s))
 	ser.flush()
 
-#not including val iterations in coordinates.txt
+#including val iterations in coordinates.txt
 
 iterations = 0
-def generalCheckSurrounding(i,j):
-	checkSurroundingX(i,j)
-	checkSurroundingY(i,j)
-	checkBothSurrounding(i,j)
+def generalCheckSurrounding(i,j, coordsX[], coordsY[]):
+	checkSurroundingX(i,j, coordsX, coordsY)
+	checkSurroundingY(i,j, coordsX, coordsY)
+	checkBothSurrounding(i,j, coordsX, coordsY)
 
-def checkSurroundingX(current, j):
+def checkSurroundingX(current, j, coordsX[], coordsY[]):
 	new = current - 1
 	if (0 <= new <= maxX):
-		if (not foundX[new] and not foundY[j] and im_outline.shape[0][new] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
+		if ((foundX[new] == 0 or foundY[j] == 0) and im_outline[0][new] == 0):
+			coordsX = coordsX.append(new)
+			coordsY = coordsY.append(j)
 			print >> f, current, j
-			foundX[new] = True
-			foundY[j] = True
-			return generalCheckSurrounding(new, j)
-		foundX[new] = True
-		foundY[j] = True
+			foundX[new] = 1
+			foundY[j] = 1
+			return generalCheckSurrounding(new, j, coordsX, coordsY)
+
 
 	new = current + 1
 	if (0 <= new <= maxX):
-		if (not foundX[new] and not foundY[j] and im_outline.shape[0][new] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
+		if ((foundX[new] == 0 or foundY[j] == 0) and im_outline[0][new] == 0):
+			coordsX = coordsX.append(new)
+			coordsY = coordsY.append(j)
 			print >> f, current, j
-			foundX[new] = True
-			foundY[j] = True
-			return generalCheckSurrounding(new, j)
-		foundX[new] = True
-		foundY[j] = True
+			foundX[new] = 1
+			foundY[j] = 1
+			return generalCheckSurrounding(new, j, coordsX, coordsY)
 
 
-def checkSurroundingY(i, current):
+
+def checkSurroundingY(i, current, coordsX[], coordsY[]):
 	new  = current - 1
 	if (0 <= new <= maxY):
-		if (not foundX[i] and not foundY[new] and im_outline.shape[1][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
+		if ((foundX[i] == 0 or foundY[new] == 0) and im_outline[1][new] == 0):
+			coordsX = coordsX.append(i)
+			coordsY = coordsY.append(new)
 			print >> f, i, current
-			foundX[i] = True
-			foundY[new] = True
-			return generalCheckSurrounding(i, new)
-		foundX[i] = True
-		foundY[new] = True
+			foundX[i] = 1
+			foundY[new] = 1
+			return generalCheckSurrounding(i, new, coordsX, coordsY)
+
 
 	new = current + 1
 	if (0 <= new <= maxY):
-		if (not foundX[i] and not foundY[new] and im_outline.shape[1][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
+		if ((foundX[i] == 0 or foundY[new] == 0) and im_outline[1][new] == 0):
+			coordsX = coordsX.append(i)
+			coordsY = coordsY.append(new)
 			print >> f, i, current
-			foundX[i] = True
-			foundY[new] = True
-			return generalCheckSurrounding(i, new)
-		foundX[i] = True
-		foundY[new] = True
+			foundX[i] = 1
+			foundY[new] = 1
+			return generalCheckSurrounding(i, new, coordsX, coordsY)
 
-def checkBothSurrounding(i, j):
+
+def checkBothSurrounding(i, j, coordsX[], coordsY[]):
 	newI = i - 1
 	newJ = j - 1
 	if (0 <= newI <= maxX and 0 <= newJ <= maxY):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
+		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[0][newI] == 0 and im_outline[1][newJ] == 0):
+			coordsX = coordsX.append(newI)
+			coordsY = coordsY.append(newJ)
 			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
+			foundX[newI] = 1
+			foundY[newJ] = 1
+			return generalCheckSurrounding(newI, newJ, coordsX, coordsY)
+
 
 	newI = i - 1
 	newJ = j + 1
 	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
+		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[0][newI] == 0 and im_outline[1][newJ] == 0):
+			coordsX = coordsX.append(newI)
+			coordsY = coordsY.append(newJ)
 			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
+			foundX[newI] = 1
+			foundY[newJ] = 1
+			return generalCheckSurrounding(newI, newJ, coordsX, coordsY)
+
 
 	newI = i + 1
 	newJ = j - 1
 	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
+		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[0][newI] == 0 and im_outline[1][newJ] == 0):
+			coordsX = coordsX.append(newI)
+			coordsY = coordsY.append(newJ)
 			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
+			foundX[newI] = 1
+			foundY[newJ] = 1
+			return generalCheckSurrounding(newI, newJ, coordsX, coordsY)
+
 		
 
 	newI = i + 1
 	newJ = j + 1
 
 	if (0 <= newI <= im_outline.shape[0] and 0 <= newJ <= im_outline.shape[1]):
-		if (not foundX[newI] and not foundY[newJ] and im_outline.shape[newI][newJ] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
+		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[0][newI] == 0 and im_outline[1][newJ] == 0):
+			coordsX = coordsX.append(newI)
+			coordsY = coordsY.append(newJ)
 			print >> f, i, current
-			foundX[newI] = True
-			foundY[newJ] = True
-			return generalCheckSurrounding(newI, newJ)
-		foundX[newI] = True
-		foundY[newJ] = True
-
+			foundX[newI] = 1
+			foundY[newJ] = 1
+			return generalCheckSurrounding(newI, newJ, coordsX, coordsY)
 
 
 
 
 for i in range(im_outline.shape[0]):
 	for j in range(im_outline.shape[1]):
-		print("looking for coords....")
 		if (im_outline[i,j] == 0):
-		# and not foundX[i] and not foundY[j]):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, j)				
-			print >> f, i, j
-			foundX[i] = True
-			foundY[j] = True
-			generalCheckSurrounding(i, j)
-			print("found a coord!!")
-
-		foundX[i] = True
-		foundY[j] = True
-
+			if (foundX[i] == 0 or foundY[j] == 0):
+				coordsX = coordsX.append(i)
+				coordsY = coordsY.append(j)				
+				print >> f, i, j
+				foundX[i] = 1
+				foundY[j] = 1
+				generalCheckSurrounding(i, j, coordsX, coordsY)
+				print("found a coord!!")
 
 
 '''
@@ -231,16 +234,16 @@ for i in range(im_outline.shape[0]):
 			previousXBlack = i
 			previousYBlack = y
 			iterations += 1
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, j)
+			coordsX = coordsX.append(i)
+			coordsY = coordsY.append(j)
 			print >> f, i, j
-		elif (im_outline[i,j] == 0 and not foundX[i] and not foundY[i]):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, j)				
+		elif (im_outline[i,j] == 0 and foundX[i] and foundY[i]):
+			coordsX = coordsX.append(i)
+			coordsY = coordsY.append(j)				
 			print >> f, i, j
 			iterations += 1
-		foundX[i] = True
-		foundY[j] = True
+		foundX[i] = 1
+		foundY[j] = 1
 
 '''
 
@@ -252,13 +255,13 @@ for i in range(im_outline.shape[0]):
 			previousXBlack = i
 			previousYBlack = y
 			iterations += 1
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, j)
+			coordsX = coordsX.append(i)
+			coordsY = coordsY.append(j)
 			print >> f, i, j
 		elif (im_outline[i,j] == 0): 
 			if ((abs(previousXBlack - i) > 7) or (abs(previousYBlack - j) > 7)):
-				coordsX = np.append(coordsX, i)
-				coordsY = np.append(coordsY, j)
+				coordsX = coordsX.append(i)
+				coordsY = coordsY.append(j)
 				print >> f, i, j
 				previousXBlack = i
 				previousYBlack = j
@@ -275,8 +278,8 @@ def checkSurrounding()
 
 
 
-message = "not get next"
-#loop so that the python program does not quit
+message = "get next"
+#loop so that the python program does quit
 for i in range (iterations):
 	while (message != "@GetNext"):
 		#read in a non-relevant line i.e. Sleep
@@ -296,17 +299,17 @@ for i in range (iterations):
 	ser.flush()
 	
 
-	message = "message not get >:("
+	message = "message get >:("
 
 
 
-message = "not get next"
-#loop so that the python program does not quit
+message = "get next"
+#loop so that the python program does quit
 for i in range (iterations):
 	while (message != "@GetNext"):
 		#read in a non-relevant line i.e. Sleep
 		print("from python: waiting")
-		while (not ser.in_waiting):
+		while (ser.in_waiting):
 			print(str(i) + "in_waiting from python: waiting to read next arduino line")
 			sleep(1)
 		
@@ -327,7 +330,7 @@ for i in range (iterations):
 	
 
 
-	message = "not get next"
+	message = "get next"
 
 
 '''
