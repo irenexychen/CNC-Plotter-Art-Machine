@@ -30,11 +30,11 @@ void makeLoop(int n, int altYStep);
 void setup() {
   penServo.attach(servoPin);//attach servo to arduino
   Serial.begin(9600);
-  pinMode(13, OUTPUT);  //makes built-in LED flash 
+  pinMode(13, OUTPUT);  //makes built-in LED flash
 }
 
 void loop() {
-  int coords[30][2];
+  int coords[1][2];
   int i = 0;
 
   delay (200);
@@ -48,35 +48,35 @@ void loop() {
     pinMode(13, ledstate);
     ledstate = !ledstate;
 
-    coords[i][0] = blockingRead(); //delay reading 1 byte
-    coords[i][1] = blockingRead(); //reads y
-  
-    i++;
+    //python sends in next two coords
+    coords[1][0] = blockingRead(); //delay reading 1 byte
+    coords[1][1] = blockingRead(); //reads y
+
+    //python must stop sending here
+    //ask python to sleep so that the cnc can have enough time to draw
+    Serial.print("@Sleep");
 
     //calculate difference
-    xstep = coords[i][0] - xold;
-    ystep = coords[i][1] - yold;
-    
+    xstep = coords[1][0] - xold;
+    ystep = coords[1][1] - yold;
+
     if (fabs(xstep) > 5 || fabs(ystep) > 5  ) {
-      penUp();
+      //move to location
+      penUp(); 
       drawX(xstep);
       drawY(ystep);
-    } else {
+    } else { 
+      //draw the shit
       penDown();
       drawX(xstep);
       drawY(ystep);
     }
-    xold = coords[i][0];
-    yold = coords[i][1];
+    xold = coords[1][0];
+    yold = coords[1][1];
 
-
-    if (i >= 29) {
-      i = 0;
-      //ask python to sleep
-      Serial.print("@Sleep");
-    }
   }
-  penUp();
+}
+penUp();
 }
 
 
@@ -89,7 +89,7 @@ void drawX(int n) {
   }
 }
 
-char blockingRead() { 
+char blockingRead() {
   while (!Serial.available()) {
     delay(100);
   }
