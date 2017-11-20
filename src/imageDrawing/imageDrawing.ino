@@ -45,7 +45,7 @@ void loop()
     int currentY;
     delay (3000);
 
-    int numCoords = 527;  //Serial.parseInt();
+    int numCoords = 1594;  //Serial.parseInt();
     //Serial.print("FROM ARDUINO!! READ the numCoords\n");
     xAxis.setSpeed(100);
     yAxis.setSpeed(100);
@@ -54,7 +54,7 @@ void loop()
     //Serial.print("FIRST\n");
     Serial.print("@GetNext"); //anything that is a command shouldn't have a \n??
     Serial.flush();
-    delay(4000);
+    delay(250);
     currentX = blockingRead();
     currentY = blockingRead();
     //Serial.print("WHY THE FUCK ARE YOU NOT SENDINGG TO PYTHON???\n");
@@ -70,7 +70,7 @@ void loop()
     {
       Serial.print("@GetNext"); //gives order to imageProcessing.py
       Serial.flush();
-      delay(4000);
+      delay(250);
       //python sends in next two coords
       currentX = blockingRead();
       //delay(2000);
@@ -88,8 +88,6 @@ void loop()
       //calculate difference
       xstep = currentX - xold;
       ystep = currentY - yold;
-
-      xstep = -xstep;
 
       if (fabs(xstep) > 20 || fabs(ystep) > 20 )
       {
@@ -216,11 +214,11 @@ int convertInputToInt() {
 void penUp()
 {
   penServo.write(70);//pulls pen up
-  delay(2000); //pause for 3 seconds
+  delay(1000); //pause for 3 seconds
 }
 
 void penDown()
 {
   penServo.write(0);//pulls pen up
-  delay(2000); //pause for 3 seconds
+  delay(1000); //pause for 3 seconds
 }
