@@ -5,7 +5,6 @@
 #include <math.h>
 #include <string.h>
 
-
 //Hardware Initialization
 const int stepsPerRevolution = 20;
 Servo penServo;//initiates servo
@@ -42,7 +41,8 @@ void loop()
 {
   while (drawBool == true)
   {
-    int coords[1][2];
+    int currentX;
+    int currentY;
     delay (3000);
 
     int numCoords = 527;  //Serial.parseInt();
@@ -51,124 +51,142 @@ void loop()
     yAxis.setSpeed(100);
 
     //sets up position, move to first coord
-    Serial.print("FIRST\n");
+    //Serial.print("FIRST\n");
     Serial.print("@GetNext"); //anything that is a command shouldn't have a \n??
     Serial.flush();
     delay(4000);
-    xold = blockingRead();
-    yold = blockingRead();
+    currentX = blockingRead();
+    currentY = blockingRead();
     //Serial.print("WHY THE FUCK ARE YOU NOT SENDINGG TO PYTHON???\n");
     penUp();
-    drawX((int)xold);
-    drawY((int)yold);
+    drawX((int)currentX);
+    drawY((int)currentY);
     penDown();
+
+    xold = currentX;
+    yold = currentY;
 
     for (int i = 1; i < numCoords; i++)
     {
       Serial.print("@GetNext"); //gives order to imageProcessing.py
       Serial.flush();
-      delay(5000);
+      delay(4000);
       //python sends in next two coords
-      coords[1][0] = blockingRead();
+      currentX = blockingRead();
       //delay(2000);
-      coords[1][1] = blockingRead(); //reads y
-
-
+      currentY = blockingRead(); //reads y
+      /*delay(2000);
+      Serial.print("THIS JUST IN: ");
+      Serial.print(currentX);
+      Serial.print(" ");
+      Serial.print(currentY);
+      Serial.print("\n");
+      
+      delay(2000);
+      Serial.flush();
+      */
       //calculate difference
-      xstep = coords[1][0] - xold;
-      ystep = coords[1][1] - yold;
+      xstep = currentX - xold;
+      ystep = currentY - yold;
 
       xstep = -xstep;
 
       if (fabs(xstep) > 20 || fabs(ystep) > 20 )
       {
         //move to location
-        Serial.print("ABOVE THRESHOLD");
-        //penUp();
+        //Serial.print("ABOVE THRESHOLD");
+        penUp();
         drawX((int)xstep);
         drawY((int)ystep);
-        //penDown();
+        penDown();
       } else {
         //draw the shit
         drawX((int)xstep);
         drawY((int)ystep);
-
-        xold = coords[1][0];
-        yold = coords[1][1];
       }
+      xold = currentX;
+      yold = currentY;
     }
     penUp();
     drawBool = false;
   }
 }
+
+
 int blockingRead()
 {
-  Serial.print("INSIDE BLOCKING READ\n");
-  Serial.flush();
+  //Serial.print("INSIDE BLOCKING READ\n");
+  //Serial.flush();
   while (!Serial.available())
   {
-    Serial.print("FML SERIAL IS NOT AVAILABLE??? WHERE'S MAH NEXT COORDINATE\n");
-    Serial.flush();
+    //Serial.print("FML SERIAL IS NOT AVAILABLE??? WHERE'S MAH NEXT COORDINATE\n");
+    //Serial.flush();
     delay(100);
   }
   return convertInputToInt();
 }
 
+
 void drawX(int n)
 {
   if (n > 0) {
-    Serial.print("Drawing positive x");
+    /*Serial.print("Drawing positive x");
     Serial.print(n);
     Serial.print("\n");
     Serial.flush();
+    */
     for (int i = 0; i < (int)n; i++)
     {
       xAxis.step(1);
       delay(10);
     }
-  } else {
-    n = -n;
-    Serial.print("Drawing negative x");
+  } else if (n < 0){
+    /*Serial.print("Drawing negative x");
     Serial.print(n);
     Serial.print("\n");
     Serial.flush();
-    for (int i = 0; i < (int)n; i++)
+    */
+    for (int i = 0; i > (int)n; i--)
     {
       xAxis.step(-1);
       delay(10);
     }
+  } else {
+    //Serial.print("No x step\n");
   }
 }
+
 
 void drawY(int n)
 {
   if (n > 0) {
-    Serial.print("Drawing positive y");
-    Serial.print(n);
-    Serial.print("\n");
-    Serial.flush();
+//    Serial.print("Drawing positive y");
+//    Serial.print(n);
+//    Serial.print("\n");
+//    Serial.flush();
     for (int i = 0; i < (int)n; i++)
     {
       yAxis.step(1);
       delay(10);
     }
-  } else {
-    n = -n;
-    Serial.print("Drawing negative y");
-    Serial.print(n);
-    Serial.print("\n");
-    Serial.flush();
-    for (int i = 0; i < (int)n; i++)
+  } else if (n < 0){
+//    Serial.print("Drawing negative y");
+//    Serial.print(n);
+//    Serial.print("\n");
+//    Serial.flush();
+    for (int i = 0; i > (int)n; i--)
     {
       yAxis.step(-1);
       delay(10);
     }
+  } else {
+    //Serial.print("No y step\n");
   }
 }
 
 int convertInputToInt() {
-  Serial.print("inside convertInputToInt function");
-  Serial.flush();
+//  Serial.print("inside convertInputToInt function");
+//  Serial.flush();
   String resultS;
   int resultI;
   char tempChar = Serial.read();
@@ -177,9 +195,6 @@ int convertInputToInt() {
   int i = 0;
   while (tempChar != ' ' && tempChar != '\n') {
     inputString += (char)tempChar;
-    Serial.print(inputString);
-    Serial.print("\n");
-    Serial.flush();
     tempChar = Serial.read();
   }
   for (int i = 0; i < inputString.length(); i++)
@@ -194,11 +209,10 @@ int convertInputToInt() {
     }
   }
   resultI = resultS.toInt();
-  Serial.print("input that was just read");
-  Serial.print(resultI);
-  Serial.flush();
   return resultI;
 }
+
+
 void penUp()
 {
   penServo.write(70);//pulls pen up

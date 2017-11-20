@@ -133,27 +133,29 @@ def checkSurroundingX(current, j):
 	global coordsX
 	global coordsY
 	new = current - 1
-	if (0 <= new < x):
-		if ((foundX[new] == 0 or foundY[j] == 0) and im_outline[new][j] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
-			print >> f, new, j
-			print("found %d %d in X +1", new, j)
-			foundX[new] = 1
-			foundY[j] = 1
-			generalCheckSurrounding(new, j)
+	if (0 <= new < y):
+		if (foundX[new] == 0 or foundY[j] == 0):
+			if (im_outline[new][j] == 0):
+				coordsX = np.append(coordsX, new)
+				coordsY = np.append(coordsY, j)
+				print >> f, new, j
+				print("found %d %d in X +1", new, j)
+				foundX[new] = 1
+				foundY[j] = 1
+				generalCheckSurrounding(new, j)
 
 
 	new = current + 1
-	if (0 <= new < x):
-		if ((foundX[new] == 0 or foundY[j] == 0) and im_outline[new][j] == 0):
-			coordsX = np.append(coordsX, new)
-			coordsY = np.append(coordsY, j)
-			print >> f, new, j
-			print("found %d %d in X +1", new, j)
-			foundX[new] = 1
-			foundY[j] = 1
-			generalCheckSurrounding(new, j)
+	if (0 <= new < y):
+		if (foundX[new] == 0 or foundY[j] == 0):
+			if (im_outline[new][j] == 0):
+				coordsX = np.append(coordsX, new)
+				coordsY = np.append(coordsY, j)
+				print >> f, new, j
+				print("found %d %d in X +1", new, j)
+				foundX[new] = 1
+				foundY[j] = 1
+				generalCheckSurrounding(new, j)
 
 
 
@@ -161,27 +163,29 @@ def checkSurroundingY(i, current):
 	global coordsX
 	global coordsY
 	new  = current - 1
-	if (0 <= new < y):
-		if ((foundX[i] == 0 or foundY[new] == 0) and im_outline[i][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
-			print >> f, i, new
-			print("found %d %d in Y -1", i, new)
-			foundX[i] = 1
-			foundY[new] = 1
-			generalCheckSurrounding(i, new)
+	if (0 <= new < x):
+		if (foundX[i] == 0 or foundY[new] == 0):
+			if (im_outline[i][new] == 0):
+				coordsX = np.append(coordsX, i)
+				coordsY = np.append(coordsY, new)
+				print >> f, i, new
+				print("found %d %d in Y -1", i, new)
+				foundX[i] = 1
+				foundY[new] = 1
+				generalCheckSurrounding(i, new)
 
 
 	new = current + 1
-	if (0 <= new < y):
-		if ((foundX[i] == 0 or foundY[new] == 0) and im_outline[i][new] == 0):
-			coordsX = np.append(coordsX, i)
-			coordsY = np.append(coordsY, new)
-			print >> f, i, new
-			print("found %d %d in Y +1", i, new)
-			foundX[i] = 1
-			foundY[new] = 1
-			generalCheckSurrounding(i, new)
+	if (0 <= new < x):
+		if (foundX[i] == 0 or foundY[new] == 0):
+			if (im_outline[i][new] == 0):
+				coordsX = np.append(coordsX, i)
+				coordsY = np.append(coordsY, new)
+				print >> f, i, new
+				print("found %d %d in Y +1", i, new)
+				foundX[i] = 1
+				foundY[new] = 1
+				generalCheckSurrounding(i, new)
 
 
 def checkBothSurrounding(i, j):
@@ -189,72 +193,75 @@ def checkBothSurrounding(i, j):
 	global coordsY
 	newI = i - 1
 	newJ = j - 1
-	if (0 <= newI < x and 0 <= newJ < y):
-		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[newI][newI] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, newI, newJ
-			print("found %d %d in dia -1 -1", newI, newJ)
-			foundX[newI] = 1
-			foundY[newJ] = 1
-			generalCheckSurrounding(newI, newJ)
+	if (0 <= newI < y and 0 <= newJ < x):
+		if (foundX[newI] == 0 or foundY[newJ] == 0):
+			if (im_outline[newI][newI] == 0):
+				coordsX = np.append(coordsX, newI)
+				coordsY = np.append(coordsY, newJ)
+				print >> f, newI, newJ
+				print("found %d %d in dia -1 -1", newI, newJ)
+				foundX[newI] = 1
+				foundY[newJ] = 1
+				generalCheckSurrounding(newI, newJ)
 
 
 	newI = i - 1
 	newJ = j + 1
-	if (0 <= newI < x and 0 <= newJ < y):
-		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[newI][newI] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, newI, newJ
-			print("found %d %d in dia -1 +1", newI, newJ)
-			foundX[newI] = 1
-			foundY[newJ] = 1
-			generalCheckSurrounding(newI, newJ)
+	if (0 <= newI < y and 0 <= newJ < x):
+		if (foundX[newI] == 0 or foundY[newJ] == 0): 
+			if (im_outline[newI][newI] == 0):
+				coordsX = np.append(coordsX, newI)
+				coordsY = np.append(coordsY, newJ)
+				print >> f, newI, newJ
+				print("found %d %d in dia -1 +1", newI, newJ)
+				foundX[newI] = 1
+				foundY[newJ] = 1
+				generalCheckSurrounding(newI, newJ)
 
 
 	newI = i + 1
 	newJ = j - 1
-	if (0 <= newI < x and 0 <= newJ < y):
-		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[newI][newI] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, newI, newJ
-			print("found %d %d in dia +1 -1", newI, newJ)
-			foundX[newI] = 1
-			foundY[newJ] = 1
-			generalCheckSurrounding(newI, newJ)
+	if (0 <= newI < y and 0 <= newJ < x):
+		if (foundX[newI] == 0 or foundY[newJ] == 0):
+			if (im_outline[newI][newI] == 0):
+				coordsX = np.append(coordsX, newI)
+				coordsY = np.append(coordsY, newJ)
+				print >> f, newI, newJ
+				print("found %d %d in dia +1 -1", newI, newJ)
+				foundX[newI] = 1
+				foundY[newJ] = 1
+				generalCheckSurrounding(newI, newJ)
 
 		
 	newI = i + 1
 	newJ = j + 1
 
-	if (0 <= newI < x and 0 <= newJ < y):
-		if ((foundX[newI] == 0 or foundY[newJ] == 0) and im_outline[newI][newI] == 0):
-			coordsX = np.append(coordsX, newI)
-			coordsY = np.append(coordsY, newJ)
-			print >> f, newI, newJ
-			print("found %d %d in dia +1 +1", newI, newJ)
-			foundX[newI] = 1
-			foundY[newJ] = 1
-			generalCheckSurrounding(newI, newJ)
+	if (0 <= newI < y and 0 <= newJ < x):
+		if (foundX[newI] == 0 or foundY[newJ] == 0):
+			if (im_outline[newI][newI] == 0):
+				coordsX = np.append(coordsX, newI)
+				coordsY = np.append(coordsY, newJ)
+				print >> f, newI, newJ
+				print("found %d %d in dia +1 +1", newI, newJ)
+				foundX[newI] = 1
+				foundY[newJ] = 1
+				generalCheckSurrounding(newI, newJ)
 
 
 
 
-for i in range(0, 200):		#i = current y coord
-	for j in range(0, 111):  #j = current x coord
-		print ("COORDINATES", i, j)
-		if ( 0 <= i < x and 0<= j < y and im_outline[i][j] == 0):
-			print("IS SMALLER")
-			if (foundX[i] == 0 or foundY[j] == 0):
-				coordsX = np.append(coordsX, i)
-				coordsY = np.append(coordsY, j)				
-				print >> f, i, j
-				print("found %d %d in initial for-loop", i, j)
-				foundX[i] = 1
-				foundY[j] = 1
-				generalCheckSurrounding(i, j)
+for i in range(im_outline.shape[0]):		#200
+	for j in range(im_outline.shape[1]):	#111
+		if ( 0 <= i < x and 0<= j < y):
+			if (im_outline[i][j] == 0):
+				if (foundX[i] == 0 or foundY[j] == 0):
+					coordsX = np.append(coordsX, i)
+					coordsY = np.append(coordsY, j)				
+					print >> f, i, j
+					print("found %d %d in initial for-loop", i, j)
+					foundX[i] = 1
+					foundY[j] = 1
+					generalCheckSurrounding(i, j)
 		
 				
 

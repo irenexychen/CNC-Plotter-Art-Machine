@@ -73,6 +73,11 @@ coordsY = []
 maxX = im_outline.shape[0]
 maxY = im_outline.shape[1]
 
+foundX = []
+foundY = []
+foundX = list(repeat(0, maxX))
+foundY = list(repeat(0, maxY))
+
 
 f = open('coordinatesquestionSORTED.txt', 'w')
 
@@ -88,14 +93,15 @@ def writeDebug(s):
 
 iterations = 0
 
-for i in range(im_outline.shape[0]):
-	for j in range(im_outline.shape[1]):
+for i in range(im_outline.shape[0]):		#x coord
+	for j in range(im_outline.shape[1]):	#y coord
+		print("looking for coords....")
 		if (im_outline[i,j] == 0):
 			coordsX = np.append(coordsX, i)
 			coordsY = np.append(coordsY, j)				
 			print >> f, i, j
-			print("found a coord!!")
-
+		foundX[i] = 1
+		foundY[j] = 1
 
 
 
