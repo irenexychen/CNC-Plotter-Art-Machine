@@ -7,12 +7,10 @@ import sys
 
 from itertools import repeat
 
-import serial.tools.list_ports
+#import serial.tools.list_ports
 sys.setrecursionlimit(3000)
 
-ports = list(serial.tools.list_ports.comports())
-for p in ports:
-    print p
+#ports = list(serial.tools.list_ports.comports())
 
 
 #resize image such that it fits within number of motor steps
@@ -79,12 +77,8 @@ coordsY = []
 
 f = open('coordinatesIMG.txt', 'w')
 
-tester = [[0 for i in range (3)] for k in range (5)]
-print(np.matrix(tester))
-
 global wentTo
 wentTo = [[0 for i in range (x)] for k in range (y)] #repeat 110 zeros(y coord), inside an array of 200 elements (x coord)
-print(np.matrix(wentTo))
 
 #for i in range(len(wentTo)):
 #	for k in range(len(wentTo[i])):
@@ -95,14 +89,8 @@ print(np.matrix(wentTo))
 print("max X is", y)
 print("max Y is", x)
 
-ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
-
-
-def writeDebug(s):
-	#print("printed from DEBUG Function:" + str(s) + "\n")
-	sleep(1)
-	ser.write(str(s))
-	ser.flush()		
+#ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
+	
 
 def checkAround(i, j):
 	global coordsX
@@ -168,7 +156,6 @@ def checkIfBlack(newI, newJ):
 			wentTo[newI][newJ] = 1
 
 
-
 for i in range(im_outline.shape[0]):		#200
 	for j in range(im_outline.shape[1]):	#111
 		#print ("inside initial for-loop", i, j)
@@ -183,6 +170,10 @@ for i in range(im_outline.shape[0]):		#200
 					wentTo[i][j] = 1
 					checkAround(i,j)
 				wentTo[i][j] = 1
+
+
+print >> f, "!"
+
 
 
 '''
@@ -231,7 +222,11 @@ for i in range(im_outline.shape[0]):		#200
 
 #parse in number of eleemets at some point
 '''
+
 numElements = len(coordsX)
+
+
+ser.write (numElements)
 
 message = "get next"
 #loop so that the python program does quit
@@ -255,3 +250,4 @@ for i in range (numElements):
 	
 
 	message = "message get >:("
+
