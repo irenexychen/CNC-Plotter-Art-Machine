@@ -41,11 +41,11 @@ void loop()
 {
   while (drawBool == true)
   {
-    int currentX;
-    int currentY;
+    int currentX[50];
+    int currentY[50];
     delay (3000);
 
-    int numCoords = 6305;  //Serial.parseInt();
+    int numCoords = ;  //Serial.parseInt();
     //Serial.print("FROM ARDUINO!! READ the numCoords\n");
     xAxis.setSpeed(100);
     yAxis.setSpeed(100);
@@ -55,55 +55,52 @@ void loop()
     Serial.print("@GetNext"); //anything that is a command shouldn't have a \n??
     Serial.flush();
     delay(250);
-    currentX = blockingRead();
-    currentY = blockingRead();
-    //Serial.print("WHY THE FUCK ARE YOU NOT SENDINGG TO PYTHON???\n");
+    currentX[0] = blockingRead();
+    currentY[0] = blockingRead();
+
     penUp();
-    drawX((int)currentX);
-    drawY((int)currentY);
+    drawX((int)currentX[0]);
+    drawY((int)currentY[0]);
     penDown();
 
-    xold = currentX;
-    yold = currentY;
+    xold = currentX[0];
+    yold = currentY[0];
+
+    //clear current, fresh memory to use in loop
+    currentX[0] = 0;
+    currentY[0] = 0;
 
     for (int i = 1; i < numCoords; i++)
     {
       Serial.print("@GetNext"); //gives order to imageProcessing.py
       Serial.flush();
       delay(250);
-      //python sends in next two coords
-      currentX = blockingRead();
-      //delay(2000);
-      currentY = blockingRead(); //reads y
-      /*delay(2000);
-      Serial.print("THIS JUST IN: ");
-      Serial.print(currentX);
-      Serial.print(" ");
-      Serial.print(currentY);
-      Serial.print("\n");
-      
-      delay(2000);
-      Serial.flush();
-      */
-      //calculate difference
-      xstep = currentX - xold;
-      ystep = currentY - yold;
+      //python sends in next 49 coords
+      for (int k = 0; k < 50; k++) {
+        currentX[k] = blockingRead();
+        //delay(2000);
+        currentY[k] = blockingRead(); //reads y
 
-      if (fabs(xstep) > 10 || fabs(ystep) > 10 )
-      {
-        //move to location
-        //Serial.print("ABOVE THRESHOLD");
-        penUp();
-        drawX((int)xstep);
-        drawY((int)ystep);
-        penDown();
-      } else {
-        //draw the shit
-        drawX((int)xstep);
-        drawY((int)ystep);
       }
-      xold = currentX;
-      yold = currentY;
+
+      for (int k = 0; k < 50; k++) {
+        //calculate difference
+        xstep = currentX[k] - xold;
+        ystep = currentY[k] - yold;
+
+        if (fabs(xstep) > 10 || fabs(ystep) > 10 ) {
+          //move to location
+          penUp();
+          drawX((int)xstep);
+          drawY((int)ystep);
+          penDown();
+        } else {
+          drawX((int)xstep);
+          drawY((int)ystep);
+        }
+        xold = currentX[k];
+        yold = currentY[k];
+      }
     }
     penUp();
     drawBool = false;
@@ -129,20 +126,20 @@ void drawX(int n)
 {
   if (n > 0) {
     /*Serial.print("Drawing positive x");
-    Serial.print(n);
-    Serial.print("\n");
-    Serial.flush();
+      Serial.print(n);
+      Serial.print("\n");
+      Serial.flush();
     */
     for (int i = 0; i < (int)n; i++)
     {
       xAxis.step(1);
       delay(10);
     }
-  } else if (n < 0){
+  } else if (n < 0) {
     /*Serial.print("Drawing negative x");
-    Serial.print(n);
-    Serial.print("\n");
-    Serial.flush();
+      Serial.print(n);
+      Serial.print("\n");
+      Serial.flush();
     */
     for (int i = 0; i > (int)n; i--)
     {
@@ -158,20 +155,20 @@ void drawX(int n)
 void drawY(int n)
 {
   if (n > 0) {
-//    Serial.print("Drawing positive y");
-//    Serial.print(n);
-//    Serial.print("\n");
-//    Serial.flush();
+    //    Serial.print("Drawing positive y");
+    //    Serial.print(n);
+    //    Serial.print("\n");
+    //    Serial.flush();
     for (int i = 0; i < (int)n; i++)
     {
       yAxis.step(1);
       delay(10);
     }
-  } else if (n < 0){
-//    Serial.print("Drawing negative y");
-//    Serial.print(n);
-//    Serial.print("\n");
-//    Serial.flush();
+  } else if (n < 0) {
+    //    Serial.print("Drawing negative y");
+    //    Serial.print(n);
+    //    Serial.print("\n");
+    //    Serial.flush();
     for (int i = 0; i > (int)n; i--)
     {
       yAxis.step(-1);
@@ -183,8 +180,8 @@ void drawY(int n)
 }
 
 int convertInputToInt() {
-//  Serial.print("inside convertInputToInt function");
-//  Serial.flush();
+  //  Serial.print("inside convertInputToInt function");
+  //  Serial.flush();
   String resultS;
   int resultI;
   char tempChar = Serial.read();
