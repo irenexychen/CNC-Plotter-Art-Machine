@@ -6,24 +6,20 @@
 #include <string.h>
 
 //Hardware Initialization
-const int stepsPerRevolution = 20;
 Servo penServo;//initiates servo
-int servoPin = 6;//pin servo is connected to
+const int stepsPerRevolution = 20;
+const int servoPin = 6;//pin servo is connected to
 
 Stepper xAxis(stepsPerRevolution, 2, 3, 10, 11); //pins x axis motor are connected to
 Stepper yAxis(stepsPerRevolution, 4, 5, 8, 9); //pins y axis motor are connected to
 
 //Dynamic Memory Initialization
 bool drawBool = true;
-bool ledstate = false;
 
 int xstep;
 int ystep;
 int xold;
 int yold;
-
-String firstCoords;
-String inputString;
 
 //Function Declarations
 void penUp();
@@ -37,7 +33,6 @@ void setup()
 {
   penServo.attach(servoPin);//attach servo to arduino
   Serial.begin(9600);
-  pinMode(13, OUTPUT);  //makes built-in LED flash
 }
 
 void loop()
@@ -46,22 +41,20 @@ void loop()
   {
     int currentX[50];
     int currentY[50];
-    delay(3000);
+    delay (3000);
 
-    Serial.print("@GetNumCoords");
-    Serial.flush();
-    int numCoords = blockingRead();
+    int numCoords = blockingRead();  //Serial.parseInt();
+    //Serial.print("FROM ARDUINO!! READ the numCoords\n");
     xAxis.setSpeed(100);
     yAxis.setSpeed(100);
 
     //sets up position, move to first coord
+    //Serial.print("FIRST\n");
     Serial.print("@GetNext"); //anything that is a command shouldn't have a \n??
     Serial.flush();
-    //delay(250);
-    firstCoords = blockingRead();
-
-    currentX[0] = convertInputToString(firstCoords);
-    currentY[0] = convertInputToString(firstCoords);
+    delay(250);
+    currentX[0] = blockingRead();
+    currentY[0] = blockingRead();
 
     penUp();
     drawX((int)currentX[0]);
@@ -74,78 +67,88 @@ void loop()
     //clear current, fresh memory to use in loop
     currentX[0] = 0;
     currentY[0] = 0;
-
-
+    int iters = 50;
     for (int i = 1; i < numCoords; i++)
     {
-      /*
-        inputString stores a large batch of string at the same time,
-        since communication between the imageProcessing program and the
-        imageDrawing program is very time consuming (wait for getNext, read
-        and write, for every single coordinate at the time)
-      */
-
       Serial.print("@GetNext"); //gives order to imageProcessing.py
       Serial.flush();
       delay(250);
-      inputString = blockingRead();
       //python sends in next 49 coords
-      
-      for (int k = 0; k < 50; k++) {
-        if (inputString != "") {
-          currentX[k] = convertInputToInt(inputString);
-          currentY[k] = convertInputToInt(inputString);
-          i++;
-        } else {
-          break; //only case when this happens is when there's less than 49 coords available, towards the end of the program
+      for (int k = 0; k < 50; k++) 
+      {
+        currentX[k] = blockingRead();
+        //delay(2000);
+        if (currentX[k] == -1) //end of file(not 49 full coords, blocked read returns -1 instead of a coordinate
+        {
+          iters = k;
+          break;
         }
+        currentY[k] = blockingRead(); //reads y
+        i++;
       }
-      
-      for (int k = 0; k < 50; k++) {
-
-        //TODO: if there's less than 50, i.e. on the last loop, make it exit properly
+   
+      for (int k = 0; k < iters; k++) 
+      {
         //calculate difference
         xstep = currentX[k] - xold;
         ystep = currentY[k] - yold;
 
-        if (fabs(xstep) > 10 || fabs(ystep) > 10 ) {
+        if (fabs(xstep) > 10 || fabs(ystep) > 10 ) 
+        {
           //move to location
           penUp();
           drawX((int)xstep);
           drawY((int)ystep);
           penDown();
-        } else {
+        } 
+        else 
+        {
           drawX((int)xstep);
           drawY((int)ystep);
         }
         xold = currentX[k];
         yold = currentY[k];
       }
-      
     }
     penUp();
     drawBool = false;
   }
 }
 
-int blockingRead() //choice for which serial input
+
+int blockingRead()
 {
+  //Serial.print("INSIDE BLOCKING READ\n");
+  //Serial.flush();
   while (!Serial.available())
   {
+    //Serial.print("FML SERIAL IS NOT AVAILABLE??? WHERE'S MAH NEXT COORDINATE\n");
+    //Serial.flush();
     delay(100);
   }
-  return getSerialInput();
+  return convertInputToInt();
 }
+
 
 void drawX(int n)
 {
   if (n > 0) {
+    /*Serial.print("Drawing positive x");
+      Serial.print(n);
+      Serial.print("\n");
+      Serial.flush();
+    */
     for (int i = 0; i < (int)n; i++)
     {
       xAxis.step(1);
       delay(10);
     }
   } else if (n < 0) {
+    /*Serial.print("Drawing negative x");
+      Serial.print(n);
+      Serial.print("\n");
+      Serial.flush();
+    */
     for (int i = 0; i > (int)n; i--)
     {
       xAxis.step(-1);
@@ -156,27 +159,27 @@ void drawX(int n)
   }
 }
 
-String getSerialInput() { //reads until long
-  char tempChar = "";
-  tempChar = Serial.read();
-  while (tempChar != ' ' && tempChar != '\n') {
-    inputString += (char)tempChar;
-    tempChar = Serial.read(); //if reads in
-    if (tempChar = "!") { //seed some ! from inside python
-      return inputString;
-    }
-  }
-}
 
 void drawY(int n)
 {
-  if (n > 0) {
+  if (n > 0) 
+  {
+    //    Serial.print("Drawing positive y");
+    //    Serial.print(n);
+    //    Serial.print("\n");
+    //    Serial.flush();
     for (int i = 0; i < (int)n; i++)
     {
       yAxis.step(1);
       delay(10);
     }
-  } else if (n < 0) {
+  } 
+  else if (n < 0) 
+  {
+    //    Serial.print("Drawing negative y");
+    //    Serial.print(n);
+    //    Serial.print("\n");
+    //    Serial.flush();
     for (int i = 0; i > (int)n; i--)
     {
       yAxis.step(-1);
@@ -187,37 +190,47 @@ void drawY(int n)
   }
 }
 
+int convertInputToInt() 
+{
+  //  Serial.print("inside convertInputToInt function");
+  //  Serial.flush();
+  String resultS;
+  int resultI;
 
-int convertInputToInt(String inputString) { //splits string, converts to int
-  String newInputString = "";
-  bool found = false;
-  int intCoord;
-  String parsedCoord;
-  for (int i = 0; i < inputString.length(); i++)
-  {
-    if (found == false) {
-      if (inputString[i] == ".") {
-        found = true;
-      }
-      else if (inputString[i] >= 48 && inputString[i] <= 57) //is a numerical val
-      {
-        parsedCoord += inputString;
-      }
-    } else { //found is true, transfer the rest into a new inputString
-      if (newInputString == "") {
-        //skip, clean out front, only save if it's a num
-        if (inputString[i] >= 48 && inputString[i] <= 57) {
-          newInputString += inputString;
-        }
-      } else {//just fill the new string up
-        newInputString += inputString;
-      }
+  String inputString = "";
+  //assume serial.available
+  int i = 0;
+  int flag = 0;
+  char tempChar = Serial.read();
+   if (tempChar == '!') //end of entire coordinates to be sent
+    {
+      flag = 1; 
+      resultI = -1;
     }
-  }
-  intCoord = parsedCoord.toInt();
-  inputString = newInputString;
-  return intCoord;
+   if (flag != 1)
+   {
+      while (tempChar != ' ' && tempChar != '\n') 
+      {
+         inputString += (char)tempChar;
+         tempChar = Serial.read();
+   
+       }
+       for (int i = 0; i < inputString.length(); i++)
+        {
+            if (inputString[i] == '.')
+            {
+                break;
+            }
+           else if (inputString[i] >= 48 && inputString[i] <= 57) //is a numerical val
+            {
+                resultS += inputString;
+            }
+         }
+       resultI = resultS.toInt();
+   }
+  return resultI;
 }
+
 
 void penUp()
 {
