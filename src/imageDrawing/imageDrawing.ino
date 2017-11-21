@@ -4,13 +4,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+const int stepsPerRevolution = 20;
+const int servoPin = 6;//pin servo is connected to
+
 //Hardware Initialization
 Servo penServo;//initiates servo
 Stepper xAxis(stepsPerRevolution, 2, 3, 10, 11); //pins x axis motor are connected to
 Stepper yAxis(stepsPerRevolution, 4, 5, 8, 9); //pins y axis motor are connected to
-
-const int stepsPerRevolution = 20;
-const int servoPin = 6;//pin servo is connected to
 
 //Dynamic Memory Initialization
 bool drawBool = true;
