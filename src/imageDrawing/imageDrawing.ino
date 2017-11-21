@@ -45,7 +45,7 @@ void loop()
     int currentY;
     delay (3000);
 
-    int numCoords = 1594;  //Serial.parseInt();
+    int numCoords = 6305;  //Serial.parseInt();
     //Serial.print("FROM ARDUINO!! READ the numCoords\n");
     xAxis.setSpeed(100);
     yAxis.setSpeed(100);
@@ -89,7 +89,7 @@ void loop()
       xstep = currentX - xold;
       ystep = currentY - yold;
 
-      if (fabs(xstep) > 20 || fabs(ystep) > 20 )
+      if (fabs(xstep) > 10 || fabs(ystep) > 10 )
       {
         //move to location
         //Serial.print("ABOVE THRESHOLD");
