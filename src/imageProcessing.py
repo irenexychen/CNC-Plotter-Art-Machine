@@ -13,7 +13,7 @@ Pixel order is determined by its surrounding black pixels, which is found recurs
 To make sure decently complex images work as well, the recursion limit of python (which
 was fairly conservative to begin with) was increased to a relatively safe number of 3000
 '''
-sys.setrecursionlimit(3000)
+sys.setrecursionlimit(5000)
 
 
 arduinoPort = serial.tools.list_ports.comports()
@@ -39,11 +39,12 @@ cv2.imwrite('img_resize.png', imgResized)
 
 
 #adds border to prevent loss of relevant pixels on edges
+'''
 borderSize = 3
 imgResized = cv2.copyMakeBorder(imgResized, top=borderSize, bottom=borderSize, left=borderSize, right=borderSize, borderType= cv2.BORDER_CONSTANT, value=[0,0,0])
 
 imgSizeY, imgSizeX = imgResized.shape[:2]
-
+'''
 
 #loading images, cvtColor converts to grayscale, interpolation choices based on OpenCV documentation
 imgColour = imgResized
@@ -72,8 +73,8 @@ imgOutlined = cv2.addWeighted(imgOutlinedTemp,1,imgOutlinedGrayscale,1,0)#merges
 imgOutlined = cv2.bitwise_not(imgOutlined)
 cv2.imwrite('img_outline.png',imgOutlined)
 print("done converting")
-cv2.imshow("window with bord", imgOutlined)
-cv2.waitKey(0)
+#cv2.imshow("window with bord", imgOutlined)
+#cv2.waitKey(0)
 
 
 
@@ -83,6 +84,8 @@ global coordsX
 coordsX = []
 global coordsY 
 coordsY = []
+global coordsCount
+coordsCount = 0;
 
 #for debugging purposes
 outputFile = open('coordinatesIMG.txt', 'w')
@@ -94,11 +97,12 @@ wentTo is a 2D array which remembers which coordinates have been checked already
 save the same pixels. Repeats the value 0, imgSizeY times, inside an array of size imgSizeX
 '''
 global wentTo
-wentTo = [[0 for xcoord in range (imgSizeX+3*borderSize)] for k in range (imgSizeY+ 3*borderSize)]
+#wentTo = [[0 for xcoord in range (imgSizeX+3*borderSize)] for k in range (imgSizeY+ 3*borderSize)]
+wentTo = [[0 for xcoord in range (imgSizeX)] for k in range (imgSizeY)]
 
 
 
-ser = serial.Serial(str(ports[0])[0:12], 9600, timeout=3)
+ser = serial.Serial(str(arduinoPort[0])[0:12], 9600, timeout=3)
 
 
 
@@ -110,6 +114,7 @@ def checkAroundCurrentPoint(xcoord, ycoord):
   global coordsX
   global coordsY
   global wentTo
+  global coordsCount
 
   newXCoord = xcoord - 1
   newYCoord = ycoord
@@ -157,6 +162,7 @@ def checkIfBlack(newXCoord, newYCoord):
   global coordsX
   global coordsY
   global wentTo
+  global coordsCount
 
   if (0 <= newXCoord < imgOutlined.shape[0]) and (0 <= newYCoord < imgOutlined.shape[1]):
     if (wentTo[newXCoord][newYCoord] == 0):
@@ -164,6 +170,7 @@ def checkIfBlack(newXCoord, newYCoord):
         coordsX = np.append(coordsX, newXCoord)
         coordsY = np.append(coordsY, newYCoord)
         print >> outputFile, newXCoord, newYCoord
+        #coordsCount+=1
         wentTo[newXCoord][newYCoord] = 1
         checkAroundCurrentPoint(newXCoord, newYCoord)
       wentTo[newXCoord][newYCoord] = 1
@@ -182,12 +189,13 @@ line ends.
 '''
 for xcoord in range(imgOutlined.shape[0]):
   for ycoord in range(imgOutlined.shape[1]):
-    if ( 0 <= xcoord < x and 0<= ycoord < y):
+    if ( 0 <= xcoord < imgSizeX and 0<= ycoord < imgSizeY):
       if (imgOutlined[xcoord][ycoord] == 0):
         if (wentTo[xcoord][ycoord] == 0):
           coordsX = np.append(coordsX, xcoord)
           coordsY = np.append(coordsY, ycoord)                
           print >> outputFile, xcoord, ycoord
+          coordsCount+=1
           wentTo[xcoord][ycoord] = 1
           checkAroundCurrentPoint(xcoord,ycoord)
         wentTo[xcoord][ycoord] = 1
@@ -200,7 +208,7 @@ print >> outputFile, "!"
 #passes in number of coordinates in element, for imageDraw.ino's for loop purposes
 #does not need a "@GetNext" command, assumes imageDraw.ino needs it
 numElements = len(coordsX)
-ser.write(numElements)
+#ser.write(numElements)
 
 
 
@@ -213,27 +221,29 @@ of 50, or as many as possible, then keeps waiting for further instructions
 
 arduinoMessage = "NOT @GetNext!"
 
+
+fullString = ""
+i = 0;
+
 while i < numElements:
   while (arduinoMessage != "@GetNext"):       
     #a non-relevant line was read in i.e. Sleep
-    #print("from python: waiting")
+    print("from python: waiting")
     arduinoMessage = ser.readline()
-    #print(str(xcoord) + "from arduino, arduinoMessage:" + arduinoMessage)
+    print(str(i) + "from arduino, arduinoMessage:" + arduinoMessage)
   #is @GetNext, give it next
-  for k in range(50):
-  if i == (numElements - 1):
-    print ("DEBUGGING MESSAGE: all coordinates have been sent in")
-    break;
-  else:  
-    ser.write(str(coordsX[i]))
-    ser.flush()
-    ser.write(" ")
-    ser.flush()
-    ser.write(str(coordsY[i]))
-    ser.flush()
-    ser.write("\n")
-    ser.flush()
-    i+=1
-
+  for k in range(10):
+    if i == (numElements - 1):
+      print ("DEBUGGING MESSAGE: all coordinates have been sent in")
+      break;
+    else:  
+      fullString += (str(coordsX[i]) + " " + str(coordsY[i]) + " ")
+      print ("writing from python", fullString); 
+     
+      ser.flush()
+      i+=1
+  fullString += "\n"
+  ser.write(str(fullString))
+  fullString = ""
   arduinoMessage = "not @GetNext yet, keep waiting"
 

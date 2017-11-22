@@ -1,3 +1,4 @@
+//////NEWWWWWW////////
 #include <Stepper.h>
 #include <Servo.h>
 #include <stdio.h>
@@ -43,23 +44,29 @@ void loop()
     int currentY[49];
     delay (3000);
 
-    int numCoords = Serial.parseInt();
+    int numCoords = 1608;
 
     xold = 0;
     yold = 0;
 
-    int iters = 50;
-    for (int i = 0; i < numCoords; i = i + 49)
+    int iters = 10;
+    for (int i = 0; i < numCoords; i = i + 9)
       /* Outer for-loop keeps track of number of coordinates to go through, which overlaps with inner for-loop
              which reads in 49 coordinates at the same time. Hence to merge the for-loops, the i counter of the outer
              for-loop must be iterated along with the inner for-loop.
       */
     {
+      Serial.print("\n");
       Serial.print("@GetNext"); //gives order to imageProcessing.py
       Serial.flush();
 
       //python sends in next 49 coords
       blockingRead(currentX, currentY);
+      Serial.print("after blocking read");
+      Serial.print (currentX[0]);
+      Serial.print("\n");
+      delay(2000);
+
       for (int k = 0; k < iters; k++)
       {
         if (currentX[k] == -1) //end of file (not 49 full coords), blocked read returns -1 instead of a coordinate
@@ -158,64 +165,100 @@ void blockingRead(int currentX[], int currentY[] )
 
 void convertSerialStrInputToInt(int currentX[], int currentY[])
 { //only called when serial.available
+
+  Serial.print("inside convertInputToInt function");
+  Serial.flush();
   String resultStr;
   int resultInt;
   String inputString = "";
 
-  char tempCharX;
+  String tempCharX = "";
   char tempCharY;
+  int l;
 
-
-  for (int i = 0; i < 50; i++)
+int i = 0;
+  while (Serial.available())
   {
-    tempCharX = Serial.read();
-    if (tempCharX == '!') //end of entire coordinates to be sent from python
-    {
-      resultInt = -1;
-      currentX[i] = resultInt;
-      break;
-    }
+    tempCharX += Serial.readString();
+  }
+  delay(5000);
+  ///for (int i = 0; i < 50; i++)
+  //{
+    Serial.print("do you even go here???\n");
 
-    while (tempCharX != ' ') //python inputs coordinates in a string separated by spaces & on diff lines
+
+    Serial.print(tempCharX);
+    Serial.flush();
+    Serial.print("testing char: ");
+    Serial.print(tempCharX[0]);
+
+    Serial.print("\n");
+    Serial.flush();
+    l = tempCharX.length();
+    for (int n = 0; n < l; n++)
     {
-      inputString += (char)tempCharX;
-      tempCharX = Serial.read();
-    }
-    for (int i = 0; i < inputString.length(); i++)
-    {
-      if (inputString[i] == '.') //python puts integers as floats into input fmor serial.read(), we just want it as an int
+      
+      if (tempCharX[n] == '!') //end of entire coordinates to be sent from python
       {
+        resultInt = -1;
+        currentX[i] = resultInt;
         break;
       }
-      else if (inputString[i] >= 48 && inputString[i] <= 57) //is an integer 0 to 9
+      Serial.print(n);
+      Serial.print("getting X\n");
+
+      Serial.flush();
+      while (tempCharX[n] != ' ') //python inputs coordinates in a string separated by spaces & on diff lines
       {
-        resultStr += inputString;
+        inputString += (char)tempCharX[n];
+        n++;
       }
-    }
-    resultInt = resultStr.toInt();
-    resultStr = "";
-    currentX[i] = resultInt;
-    
-    tempCharY = Serial.read();
-    while (tempCharY != '\n')//python inputs coordinates in a string separated by spaces & on diff lines
-    {
-      inputString += (char)tempCharY;
-      tempCharY = Serial.read();
-    }
-    for (int i = 0; i < inputString.length(); i++)
-    {
-      if (inputString[i] == '.') //python puts integers as floats into input fmor serial.read(), we just want it as an int
+      n++;
+     
+
+      for (int j = 0; j < inputString.length(); j++)
       {
-        break;
+        if (inputString[j] == '.') //python puts integers as floats into input fmor serial.read(), we just want it as an int
+        {
+          break;
+        }
+        else if (inputString[j] >= 48 && inputString[j] <= 57) //is an integer 0 to 9
+        {
+          resultStr += inputString;
+        }
       }
-      else if (inputString[i] >= 48 && inputString[i] <= 57) //is an integer 0 to 9
+      resultInt = resultStr.toInt();
+      resultStr = "";
+      inputString = "";
+      currentX[i] = resultInt;
+
+
+      while (tempCharX[n] != ' ') //python inputs coordinates in a string separated by spaces & on diff lines
       {
-        resultStr += inputString;
+        inputString += (char)tempCharX[n];
+        n++;
       }
-    }
-    resultInt = resultStr.toInt();
-    resultStr = "";
-    currentY[i] = resultInt;
+
+      for (int j = 0; j < inputString.length(); j++)
+      {
+        if (inputString[j] == '.') //python puts integers as floats into input fmor serial.read(), we just want it as an int
+        {
+          break;
+        }
+        else if (inputString[j] >= 48 && inputString[j] <= 57) //is an integer 0 to 9
+        {
+          resultStr += inputString;
+        }
+      }
+      resultInt = resultStr.toInt();
+      resultStr = "";
+      inputString = "";
+      currentY[i] = resultInt;
+
+      i++;
+    //}
 
   }
+  Serial.print("got all 50\n");
+  delay(1000);
 }
