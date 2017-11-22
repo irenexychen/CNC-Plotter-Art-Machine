@@ -232,7 +232,7 @@ while i < numElements:
     arduinoMessage = ser.readline()
     print(str(i) + "from arduino, arduinoMessage:" + arduinoMessage)
   #is @GetNext, give it next
-  for k in range(10):
+  for k in range(0,5):
     if i == (numElements - 1):
       print ("DEBUGGING MESSAGE: all coordinates have been sent in")
       break;
