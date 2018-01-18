@@ -1,4 +1,4 @@
-#CNC Plotter - Art Machine#
+## CNC Plotter - Art Machine ## 
 What initially started as a "square drawer" evolved into the art drawing machine as shown:
 
 <link to image/video>
