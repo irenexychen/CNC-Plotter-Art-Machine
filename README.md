@@ -2,7 +2,7 @@
 What initially started as a "square drawer" evolved into the art drawing machine as shown:
 
 
-![time lapse](https://raw.githubusercontent.com/PotentialOnWings/CNC-Plotter-Art-Machine/master/1514832981237.mp4)
+![goose drawing time lapse](https://raw.githubusercontent.com/PotentialOnWings/CNC-Plotter-Art-Machine/master/goosedrawing.gif)
 
 
 **Hardware used:** Arduino UNO, breadboard, wires. As well as:
