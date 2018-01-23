@@ -14,4 +14,4 @@ As for the software itself, I implemented image transformations and manipulation
 
 Here are some of it's masterpieces!
 
-![images](https://raw.githubusercontent.com/PotentialOnWings/sailbot-image-classifier/master/IMG_20171123_131458.jpg)
+![images](https://raw.githubusercontent.com/PotentialOnWings/CNC-Plotter-Art-Machine/master/IMG_20171123_131458.jpg)
