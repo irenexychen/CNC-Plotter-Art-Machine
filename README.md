@@ -1,7 +1,9 @@
 ## CNC Plotter - Art Machine ## 
 What initially started as a "square drawer" evolved into the art drawing machine as shown:
 
-<link to image/video>
+
+![time lapse](https://raw.githubusercontent.com/PotentialOnWings/CNC-Plotter-Art-Machine/master/1514832981237.mp4)
+
 
 **Hardware used:** Arduino UNO, breadboard, wires. As well as:
 - Two optical drives were disassembled and act as rails to move the plotter in the x and y direction. 
@@ -12,4 +14,4 @@ As for the software itself, I implemented image transformations and manipulation
 
 Here are some of it's masterpieces!
 
-<insert images here>
+![images](https://raw.githubusercontent.com/PotentialOnWings/sailbot-image-classifier/master/IMG_20171123_131458.jpg)
